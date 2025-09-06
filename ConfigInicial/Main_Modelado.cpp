@@ -1,3 +1,10 @@
+/*
+
+Práctica 4								   Hernández Rubio Dana Valeria
+Fecha de entrega: 6 de Septiembre del 2025		     	      317345153
+
+*/
+
 #include<iostream>
 
 //#define GLEW_STATIC
@@ -34,7 +41,7 @@ int main() {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Modelado geometrico", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Modelado geometrico - Hernandez Rubio Dana Valeria", nullptr, nullptr);
 
 	int screenWidth, screenHeight;
 
@@ -198,37 +205,37 @@ int main() {
 		glBindVertexArray(VAO);
 	
 	    model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(3.0f, 0.1f, 2.0f));//ancho, grasor , profundidad
-		model = glm::translate(model, glm::vec3(0.0f, 0.6f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.2f));//ancho, grasor , profundidad
+		model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-		//Pata 1
+		//Torzo
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(2.9f, -0.6f, 1.9f));//Pata derecha
+		model = glm::scale(model, glm::vec3(0.9f, 0.8f, 0.5f));//Tamaño de la pata	
+		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));//Pata derecha
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Pata 2
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(-2.9f, -0.6f, 1.9f));//Pata derecha
+		model = glm::translate(model, glm::vec3(-6.5f, -0.6f, 2.0f));//Pata derecha
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Pata 3
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(-2.9f, -0.6f, -1.9f));//Pata derecha
+		model = glm::translate(model, glm::vec3(-5.0f, -0.6f, 2.0f));//Pata derecha
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Pata 4
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(2.9f, -0.6f, -1.9f));//Pata derecha
+		model = glm::translate(model, glm::vec3(5.0f, -0.6f, 2.0f));//Pata derecha
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
