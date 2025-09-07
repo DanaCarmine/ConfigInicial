@@ -83,7 +83,35 @@ int main() {
 	Shader ourShader("Shader/core.vs", "Shader/core.frag");
 	
 	// usando un color uniforme en el shader para cambiar el color de los objetos
-	GLint uColorLoc = glGetUniformLocation(ourShader.Program, "uColor");
+	GLint faceColorsLoc = glGetUniformLocation(ourShader.Program, "uFaceColors");
+	//Paletas de colores
+
+	glm::vec3 paletteWhite[6] = {
+		{0.92f, 0.92f, 0.92f},   // +X blanco puro
+		{0.95f, 0.95f, 0.95f},// -X gris muy claro
+		{0.9f, 0.9f, 0.9f},   // +Y gris claro
+		{0.85f, 0.85f, 0.85f},// -Y gris un poco más oscuro
+		{1.0f, 1.0f, 1.0f},// +Z gris suave
+		{0.8f, 0.8f, 0.8f}    // -Z gris claro tirando a sombra
+	};
+
+	glm::vec3 paletteBlack[6] = {
+		{0.05f, 0.05f, 0.05f}, // +X negro casi puro
+		{0.1f, 0.1f, 0.1f},    // -X negro un poco levantado
+		{0.15f, 0.15f, 0.15f}, // +Y gris muy oscuro
+		{0.2f, 0.2f, 0.2f},    // -Y gris oscuro
+		{0.12f, 0.12f, 0.12f}, // +Z gris medio oscuro
+		{0.25f, 0.25f, 0.25f}  // -Z gris más claro (reflejo simulado)
+	};
+
+	glm::vec3 paletteBlue[6] = {
+		{0.0f, 0.0f, 1.0f},   // +X azul puro
+		{0.0f, 0.0f, 0.9f},   // -X azul un poco menos saturado
+		{0.0f, 0.0f, 0.8f},   // +Y azul más oscuro
+		{0.1f, 0.1f, 0.7f},   // -Y azul con toque gris
+		{0.2f, 0.2f, 0.9f},   // +Z azul brillante
+		{0.05f, 0.05f, 0.6f}  // -Z azul muy oscuro
+	};
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 
@@ -207,9 +235,9 @@ int main() {
 		glBindVertexArray(VAO);
 		//Cabeza
 	    model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.2f));//ancho, grasor , profundidad
-		model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniform3f(uColorLoc, 1.0f, 1.0f, 1.0f);
+		model = glm::scale(model, glm::vec3(1.3f, 1.1f, 1.3f));//ancho, grasor , profundidad
+		model = glm::translate(model, glm::vec3(0.0f, 0.9f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -218,7 +246,7 @@ int main() {
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.9f, 0.4f, 0.5f)); // Tamaño
 		model = glm::translate(model, glm::vec3(0.0f, 0.8f, 0.0f)); // Posición
-		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -226,34 +254,59 @@ int main() {
 		model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(0.9f, 0.8f, 0.5f));//Tamaño	
 		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
-		glUniform3f(uColorLoc, 0.2f, 0.5f, 1.0f);
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-
-		//Pata 2
-		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño 	
-		model = glm::translate(model, glm::vec3(-6.5f, -0.6f, 0.0f));
-		glUniform3f(uColorLoc, 0.6f, 0.6f, 0.6f);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Brazo 1
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño
-		model = glm::translate(model, glm::vec3(-5.0f, -0.6f, 0.0f));
-		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
+		model = glm::scale(model, glm::vec3(0.23f, 0.4f, 0.23f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-3.0f, -0.2f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Brazo 2
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño 
-		model = glm::translate(model, glm::vec3(5.0f, -0.6f, 0.0f));
-		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
+		model = glm::scale(model, glm::vec3(0.23f, 0.4f, 0.23f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(3.0f, -0.2f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Mano 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-1.6f, -0.5f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Mano 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(1.6f, -0.5f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Hombro 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.4f, 0.23f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(-1.5f, 1.0f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Hombro 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.4f, 0.23f, 0.23f));//Tamaño 
+		model = glm::translate(model, glm::vec3(1.5f, 1.0f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		glBindVertexArray(0);
 		// Swap the screen buffers
