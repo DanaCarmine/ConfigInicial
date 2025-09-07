@@ -244,16 +244,16 @@ int main() {
 
 		// Torso
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.9f, 0.4f, 0.5f)); // Tamaño
-		model = glm::translate(model, glm::vec3(0.0f, 0.8f, 0.0f)); // Posición
+		model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.5f)); // Tamaño
+		model = glm::translate(model, glm::vec3(0.0f, 0.5f, 0.0f)); // Posición
 		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		//Pantalones
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.9f, 0.8f, 0.5f));//Tamaño	
-		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.5f));//Tamaño	
+		model = glm::translate(model, glm::vec3(0.0f, 0.07f, 0.0f));
 		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -307,6 +307,69 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		//Pantalon 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.35f, 0.35f, 0.35f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-0.8f, -0.9f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pantalon 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.35f, 0.35f, 0.35f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(0.8f, -0.9f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pierna 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.25f, 0.6f, 0.25f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-1.0f, -0.9f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pierna 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.25f, 0.6f, 0.25f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(1.0f, -0.9f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Zapato 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.39f, 0.37f, 0.39f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-0.6f, -2.5f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Zapato 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.39f, 0.37f, 0.39f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(0.6f, -2.5f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Punta de Zapato 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.39f, 0.28f, 0.4f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-0.6f, -3.45f, 0.7f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Punta de Zapato 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.39f, 0.28f, 0.39f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(1.3f, -3.45f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
 		// Swap the screen buffers
