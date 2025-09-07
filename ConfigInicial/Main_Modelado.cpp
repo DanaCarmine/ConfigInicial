@@ -81,7 +81,9 @@ int main() {
 
 	// Build and compile our shader program
 	Shader ourShader("Shader/core.vs", "Shader/core.frag");
-
+	
+	// usando un color uniforme en el shader para cambiar el color de los objetos
+	GLint uColorLoc = glGetUniformLocation(ourShader.Program, "uColor");
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 
@@ -157,8 +159,8 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	//Color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+	//glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -179,8 +181,8 @@ int main() {
 
 		// Render
 		// Clear the colorbuffer
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+		glClearColor(1.0f, 0.9f, 0.2f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 		// Draw our first triangle
@@ -203,39 +205,53 @@ int main() {
 	
 
 		glBindVertexArray(VAO);
-	
+		//Cabeza
 	    model = glm::mat4(1.0f);
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.2f));//ancho, grasor , profundidad
 		model = glm::translate(model, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniform3f(uColorLoc, 1.0f, 1.0f, 1.0f);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
-		//Torzo
+		// Torso
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.9f, 0.8f, 0.5f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));//Pata derecha
+		model = glm::scale(model, glm::vec3(0.9f, 0.4f, 0.5f)); // Tamaño
+		model = glm::translate(model, glm::vec3(0.0f, 0.8f, 0.0f)); // Posición
+		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pantalones
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.9f, 0.8f, 0.5f));//Tamaño	
+		model = glm::translate(model, glm::vec3(0.0f, 0.2f, 0.0f));
+		glUniform3f(uColorLoc, 0.2f, 0.5f, 1.0f);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 
 		//Pata 2
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(-6.5f, -0.6f, 2.0f));//Pata derecha
+		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(-6.5f, -0.6f, 0.0f));
+		glUniform3f(uColorLoc, 0.6f, 0.6f, 0.6f);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Pata 3
+		//Brazo 1
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(-5.0f, -0.6f, 2.0f));//Pata derecha
+		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño
+		model = glm::translate(model, glm::vec3(-5.0f, -0.6f, 0.0f));
+		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Pata 4
+		//Brazo 2
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño de la pata	
-		model = glm::translate(model, glm::vec3(5.0f, -0.6f, 2.0f));//Pata derecha
+		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));//Tamaño 
+		model = glm::translate(model, glm::vec3(5.0f, -0.6f, 0.0f));
+		glUniform3f(uColorLoc, 0.0f, 0.0f, 0.0f); // Negro
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
