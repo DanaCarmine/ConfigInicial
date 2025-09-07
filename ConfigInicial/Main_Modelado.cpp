@@ -1,7 +1,7 @@
 /*
 
 Práctica 4								   Hernández Rubio Dana Valeria
-Fecha de entrega: 6 de Septiembre del 2025		     	      317345153
+Fecha de entrega: 7 de Septiembre del 2025		     	      317345153
 
 */
 
@@ -105,12 +105,21 @@ int main() {
 	};
 
 	glm::vec3 paletteBlue[6] = {
-		{0.0f, 0.0f, 1.0f},   // +X azul puro
-		{0.0f, 0.0f, 0.9f},   // -X azul un poco menos saturado
-		{0.0f, 0.0f, 0.8f},   // +Y azul más oscuro
-		{0.1f, 0.1f, 0.7f},   // -Y azul con toque gris
-		{0.2f, 0.2f, 0.9f},   // +Z azul brillante
-		{0.05f, 0.05f, 0.6f}  // -Z azul muy oscuro
+		 {0.18f, 0.49f, 0.73f}, // +X base
+		{0.15f, 0.43f, 0.66f}, // -X
+		{0.12f, 0.36f, 0.58f}, // +Y
+		{0.10f, 0.30f, 0.50f}, // -Y
+		{0.22f, 0.56f, 0.80f}, // +Z un poco más brillante
+		{0.08f, 0.25f, 0.45f}  // -Z más oscuro
+	};
+
+	glm::vec3 paletteTongue[6] = {
+		{0.78f, 0.27f, 0.27f}, // +X base
+		{0.70f, 0.23f, 0.23f}, // -X
+		{0.62f, 0.20f, 0.20f}, // +Y
+		{0.55f, 0.17f, 0.17f}, // -Y
+		{0.85f, 0.32f, 0.32f}, // +Z highlight
+		{0.45f, 0.14f, 0.14f}  // -Z sombra
 	};
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
@@ -209,7 +218,7 @@ int main() {
 
 		// Render
 		// Clear the colorbuffer
-		glClearColor(1.0f, 0.9f, 0.2f, 1.0f);
+		glClearColor(0.95f, 0.64f, 0.23f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -371,10 +380,116 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glBindVertexArray(0);
+		//Agarradera 1 
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.2f, 0.66f, 0.2f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(4.8f, 1.5f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Agarradera 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(3.8f, 3.8f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Agarradera 3
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(3.8f, 6.1f, 0.0f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Nariz
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.4f, 0.23f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(0.0f ,4.0f, 3.0));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Boca 1
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.45f, 0.1f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(0.0f, 6.0f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Boca 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.6f, 0.1f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(0.0f, 7.0f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Lengua
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.28f, 0.07f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(0.0f, 8.7f, 2.8));
+		glUniform3fv(faceColorsLoc, 6, &paletteTongue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//ojo 1 izq
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.1f, 0.3f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(4.0f, 3.76f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		//ojo 2 izq
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.15f, 0.35f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(1.9f, 3.3f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		//ojo 1 der
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.1f, 0.3f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(-2.5f, 3.76f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		//ojo 2 der
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.15f, 0.35f, 0.23f));//Tamaño
+		model = glm::translate(model, glm::vec3(-2.5f, 3.3f, 2.5));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlack[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		//Popote 1 
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.2f, 0.66f, 0.2f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(2.0f, 2.5f,- 1.5f));
+		glUniform3fv(faceColorsLoc, 6, &paletteWhite[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Popote 2
+		model = glm::mat4(1.0f);
+		model = glm::scale(model, glm::vec3(0.21f, 0.2f, 0.22f));//Tamaño 	
+		model = glm::translate(model, glm::vec3(1.9f, 8.3f, -1.4f));
+		glUniform3fv(faceColorsLoc, 6, &paletteBlue[0].x);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
-	
+
+
 	}
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
