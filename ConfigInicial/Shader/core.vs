@@ -1,14 +1,17 @@
 #version 330 core
 layout (location = 0) in vec3 position;
 
+
+out vec3 ourColor;
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 transform;
+uniform vec3 color;
 
-out vec3 vWorldPos;  // posición en espacio mundo (para derivadas en FS)
-
-void main() {
-    vec4 wp = model * vec4(position, 1.0);
-    vWorldPos = wp.xyz;
-    gl_Position = projection * view * wp;
+void main()
+{
+    gl_Position =projection*view*model*vec4(position, 1.0f);
+    ourColor = color;
 }
