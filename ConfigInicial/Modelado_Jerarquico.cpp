@@ -26,7 +26,7 @@ movY = 0.0f,
 movZ = -5.0f,
 rot = 0.0f;
 
-// --- Rangos en grados (ajústalos si lo necesitas) ---
+// --- Rangos en grados  ---
 constexpr float SHOULDER_MIN = -130.0f;
 constexpr float SHOULDER_MAX = 110.0f;
 
@@ -440,7 +440,7 @@ int main() {
 	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) // Muñeca atras
 		muneca -= 0.18f;
 
-	// Dedos A (grupo superior e inferior) - usa tus mismas variables
+	// Dedos A (grupo superior e inferior) 
 	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) // 3 arriba A -> adelante
 		dedo3ArribaA += 0.18f;
 	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) // 3 arriba A -> atrás
@@ -467,17 +467,12 @@ int main() {
 	codo = clampf(codo, ELBOW_MIN, ELBOW_MAX);
 	muneca = clampf(muneca, WRIST_MIN, WRIST_MAX);
 
-	// Si además usas 'dedo1/dedo2' globales para todos los dedos:
-	// dedo1 = clampf(dedo1, MCP_MIN, MCP_MAX);
-	// dedo2 = clampf(dedo2, IP_MIN,  IP_MAX);
 
-	// Y si usas las variables por grupos como en tu snippet:
 	dedo3ArribaA = clampf(dedo3ArribaA, MCP_MIN, MCP_MAX);
 	dedo3AbajoA = clampf(dedo3AbajoA, MCP_MIN, MCP_MAX);
 	dedo3ArribaB = clampf(dedo3ArribaB, IP_MIN, IP_MAX);
 	dedo3AbajoB = clampf(dedo3AbajoB, IP_MIN, IP_MAX);
 
-	// (Opcional) evita overflow de la rotación de cámara:
 	if (rot > 360.f || rot < -360.f) {
 		rot = std::fmod(rot, 360.f);
 	}
