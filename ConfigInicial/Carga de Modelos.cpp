@@ -1,7 +1,7 @@
 /*
 
-Previo 6								   Hernández Rubio Dana Valeria
-Fecha de entrega: 16 de Septiembre del 2025		     	      317345153
+Práctica 6								   Hernández Rubio Dana Valeria
+Fecha de entrega: 20 de Septiembre del 2025		     	      317345153
 
 */
 
@@ -102,8 +102,16 @@ int main( )
     
     // Load models
     Model dog((char*)"Models/RedDog.obj");
+    Model car((char*)"Models/Transport6C.obj");
+    Model arbol((char*)"Models/Arbol.obj");
+    Model stopSign((char*)"Models/StopSign.obj");
+    Model hatsuneMiku((char*)"Models/HatsuneMiku.obj");
+    Model trashcan((char*)"Models/shareModel.obj");
     glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 100.0f );
-    
+
+  
+   
+   
   
 
     // Game loop
@@ -133,10 +141,31 @@ int main( )
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 		dog.Draw(shader);
 
-		model = glm:: translate(model,glm::vec3(3.0f,0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
-		glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        dog.Draw(shader);
+	
+        // Carro
+        glm::mat4 carModel(1);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(carModel));
+        car.Draw(shader);
+
+        // Arbol
+        glm::mat4 arbModel(1);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(arbModel));
+        arbol.Draw(shader);
+
+		// Señal de alto
+        glm::mat4 stopSignModel(1);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(stopSignModel));
+        stopSign.Draw(shader);
+
+        // Hatsune Miku
+        glm::mat4 hatsuneMikuModel(1);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(hatsuneMikuModel));
+        hatsuneMiku.Draw(shader);
+
+		// Basurero
+        glm::mat4 trashcanModel(1);
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(trashcanModel));
+        trashcan.Draw(shader);
 
         // Swap the buffers
         glfwSwapBuffers( window );
