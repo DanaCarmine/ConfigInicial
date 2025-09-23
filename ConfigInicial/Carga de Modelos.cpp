@@ -1,7 +1,7 @@
 /*
 
-Práctica 6								   Hernández Rubio Dana Valeria
-Fecha de entrega: 20 de Septiembre del 2025		     	      317345153
+Previo 7								   Hernández Rubio Dana Valeria
+Fecha de entrega: 22 de Septiembre del 2025		     	      317345153
 
 */
 
