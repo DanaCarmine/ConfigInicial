@@ -1,6 +1,6 @@
 /*
 
-Previo 8     							   Hernández Rubio Dana Valeria
+Práctica 8     							   Hernández Rubio Dana Valeria
 Fecha de entrega: 30 de Septiembre del 2025		     	      317345153
 
 */
@@ -111,7 +111,12 @@ int main()
 
 
     // Load models
-    Model cat((char*)"12161_Cat_v1_L2.obj");
+    Model redDog((char*)"RedDog.obj");
+    Model car((char*)"Models/Transport6C.obj");
+    Model arbol((char*)"Models/Arbol.obj");
+    Model stopSign((char*)"Models/StopSign.obj");
+    Model hatsuneMiku((char*)"Models/HatsuneMiku.obj");
+    Model trashcan((char*)"Models/shareModel.obj");
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
     float vertices[] = {
@@ -186,7 +191,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-    image = stbi_load("Models/12261_Cat_diffuse.jpg", &textureWidth, &textureHeight, &nrChannels, 0);
+    image = stbi_load("Models/Texture_albedo.jpg", &textureWidth, &textureHeight, &nrChannels, 0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
     if (image)
@@ -267,9 +272,9 @@ int main()
         model = glm::scale(model, glm::vec3(1.0f)); // prueba sin ×3
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-       
+
         // glBindVertexArray(VAO);
-        cat.Draw(lightingShader);
+        redDog.Draw(lightingShader);
         //glDrawArrays(GL_TRIANGLES, 0, 36);
 
 

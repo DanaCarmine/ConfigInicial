@@ -27,6 +27,7 @@ uniform Light light;
 uniform Light light2; // Luz nueva
 
 uniform sampler2D texture_diffusse;
+uniform sampler2D texture_specular;
 
 void main()
 {
