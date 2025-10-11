@@ -28,6 +28,7 @@ Fecha de entrega: 30 de Septiembre del 2025		     	      317345153
 // Other Libs
 #include "SOIL2/SOIL2.h"
 #include "stb_image.h"
+
 // Properties
 const GLuint WIDTH = 800, HEIGHT = 600;
 int SCREEN_WIDTH, SCREEN_HEIGHT;
@@ -36,7 +37,6 @@ int SCREEN_WIDTH, SCREEN_HEIGHT;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void MouseCallback(GLFWwindow* window, double xPos, double yPos);
 void DoMovement();
-
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
@@ -54,6 +54,10 @@ GLfloat lastFrame = 0.0f;
 float rot = 0.0f;
 bool activanim = false;
 
+//Flags Día/Noche
+bool sunEnabled = true;   // Día por defecto
+bool moonEnabled = false;  // Luna apagada en día
+
 glm::vec3 lightPos2(-1.0f, 1.0f, 2.0f);  // posición de la luz 2
 glm::vec3 moonCenter(0.0f, 0.0f, 0.0f);
 glm::vec3 moonPlaneOffset(0.0f, 0.0f, -2.0f);
@@ -67,6 +71,75 @@ float moonAngle = 0.0f;
 float sunSpeed = 1.5f;   // rad/s cuando mantienes la tecla
 float moonSpeed = 1.2f;
 
+struct SphereMesh {
+    GLuint vao = 0, vbo = 0, ebo = 0;
+    GLsizei indexCount = 0;
+};
+
+// UV-sphere (pos + normal). slices ~ longitudes, stacks ~ latitudes
+SphereMesh makeSphere(int stacks = 24, int slices = 36, float radius = 1.0f) {
+    SphereMesh M;
+    std::vector<float> data;           // interleaved: pos(3), normal(3)
+    std::vector<unsigned int> idx;
+
+    for (int i = 0; i <= stacks; ++i) {
+        float v = float(i) / stacks;
+        float phi = v * glm::pi<float>();            // 0..pi
+        float y = cos(phi);
+        float r = sin(phi);
+
+        for (int j = 0; j <= slices; ++j) {
+            float u = float(j) / slices;
+            float theta = u * glm::two_pi<float>();  // 0..2pi
+            float x = r * cos(theta);
+            float z = r * sin(theta);
+
+            // position
+            data.push_back(radius * x);
+            data.push_back(radius * y);
+            data.push_back(radius * z);
+            // normal (unit sphere -> same as pos normalized)
+            data.push_back(x);
+            data.push_back(y);
+            data.push_back(z);
+        }
+    }
+
+    for (int i = 0; i < stacks; ++i) {
+        for (int j = 0; j < slices; ++j) {
+            int row1 = i * (slices + 1);
+            int row2 = (i + 1) * (slices + 1);
+            idx.push_back(row1 + j);
+            idx.push_back(row2 + j);
+            idx.push_back(row2 + j + 1);
+            idx.push_back(row1 + j);
+            idx.push_back(row2 + j + 1);
+            idx.push_back(row1 + j + 1);
+        }
+    }
+
+    glGenVertexArrays(1, &M.vao);
+    glGenBuffers(1, &M.vbo);
+    glGenBuffers(1, &M.ebo);
+
+    glBindVertexArray(M.vao);
+    glBindBuffer(GL_ARRAY_BUFFER, M.vbo);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, M.ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(unsigned int), idx.data(), GL_STATIC_DRAW);
+
+    // layout: location 0 = position, 1 = normal
+    GLsizei stride = 6 * sizeof(float);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    M.indexCount = (GLsizei)idx.size();
+    return M;
+}
 
 
 int main()
@@ -92,15 +165,11 @@ int main()
     }
 
     glfwMakeContextCurrent(window);
-
     glfwGetFramebufferSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT);
 
     // Set the required callback functions
     glfwSetKeyCallback(window, KeyCallback);
     glfwSetCursorPosCallback(window, MouseCallback);
-
-    // GLFW Options
-    //glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
@@ -133,64 +202,8 @@ int main()
     Model trashcan((char*)"Models/shareModel.obj");
 
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-
-    float vertices[] = {
-      -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-       
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
-
-    // First, set the container's VAO (and VBO)
-    GLuint VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    // normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    SphereMesh lampSphere = makeSphere(24, 36, 1.0f);
+   
   
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -219,7 +232,7 @@ int main()
         glm::vec3 moonPos = moonCenter + moonPlaneOffset + glm::vec3(
             moonRadius * cos(moonAngle), // X (este-oeste)
             moonRadius * sin(moonAngle), // Y (arriba-abajo)
-            0.0f                         // Z fijo (no atraviesa el centro)
+            0.0f                         // Z fijo
         );
 
         lightingShader.Use();
@@ -252,7 +265,31 @@ int main()
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 0.6f, 0.6f, 0.6f);
         glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 32.0f);
 
-       lightingShader.Use();
+        // Modo Día/Noche: colores de luces
+        if (sunEnabled) {
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.08f, 0.06f, 0.02f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 1.00f, 0.95f, 0.80f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.00f, 0.95f, 0.85f);
+        }
+        else {
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 0.0f, 0.0f, 0.0f);
+        }
+
+        if (moonEnabled) {
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 0.02f, 0.03f, 0.06f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.diffuse"), 0.60f, 0.70f, 1.00f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.specular"), 0.60f, 0.70f, 1.00f);
+        }
+        else {
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.diffuse"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.specular"), 0.0f, 0.0f, 0.0f);
+        }
+
+        
+        lightingShader.Use();
 
         // Draw the loaded model
         glm::mat4 model;
@@ -289,37 +326,36 @@ int main()
         glBindVertexArray(0);
 
 
-        // Lámpara del Sol
+        // Lámparas visibles según modo 
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, sunPos);
-        model = glm::scale(model, glm::vec3(0.3f));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
 
+        // Sol
+        if (sunEnabled) {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, sunPos);
+            model = glm::scale(model, glm::vec3(0.3f));
+            glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(lampSphere.vao);
+            glDrawElements(GL_TRIANGLES, lampSphere.indexCount, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+        }
 
-        // Lámpara de la Luna
-        lampshader.Use();
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, moonPos);
-        model = glm::scale(model, glm::vec3(0.3f));
-        glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+        // Luna
+        if (moonEnabled) {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, moonPos);
+            model = glm::scale(model, glm::vec3(0.3f));
+            glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(lampSphere.vao);
+            glDrawElements(GL_TRIANGLES, lampSphere.indexCount, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+        }
 
-        // Swap the buffers
+        // Swap
         glfwSwapBuffers(window);
     }
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
     return 0;
@@ -356,13 +392,11 @@ void DoMovement()
             rot -= 0.1f;
     }
 
-    // Girar el Sol (YZ: norte-sur). O=horario, L=antihorario (ajusta a gusto)
-    if (keys[GLFW_KEY_O]) sunAngle += sunSpeed * deltaTime;
-    if (keys[GLFW_KEY_L]) sunAngle -= sunSpeed * deltaTime;
-
-    // Girar la Luna (XZ: este-oeste). I=horario, K=antihorario
-    if (keys[GLFW_KEY_I]) moonAngle += moonSpeed * deltaTime;
-    if (keys[GLFW_KEY_K]) moonAngle -= moonSpeed * deltaTime;
+    // Orbitar solo el que esté activo 
+    if (keys[GLFW_KEY_O] && sunEnabled)  sunAngle += sunSpeed * deltaTime;
+    if (keys[GLFW_KEY_L] && sunEnabled)  sunAngle -= sunSpeed * deltaTime;
+    if (keys[GLFW_KEY_I] && moonEnabled) moonAngle += moonSpeed * deltaTime;
+    if (keys[GLFW_KEY_K] && moonEnabled) moonAngle -= moonSpeed * deltaTime;
 
 }
 
@@ -375,6 +409,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
     if (key >= 0 && key < 1024) {
         if (action == GLFW_PRESS)   keys[key] = true;
         if (action == GLFW_RELEASE) keys[key] = false;
+    }
+    // Toggle modos con 1 (Día) y 2 (Noche)
+    if (action == GLFW_PRESS) {
+        if (key == GLFW_KEY_M) { sunEnabled = true;  moonEnabled = false; }
+        if (key == GLFW_KEY_N) { sunEnabled = false; moonEnabled = true; }
     }
 }
 
