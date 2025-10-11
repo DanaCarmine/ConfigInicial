@@ -111,12 +111,7 @@ int main()
 
 
     // Load models
-    Model redDog((char*)"RedDog.obj");
-    Model car((char*)"Models/Transport6C.obj");
-    Model arbol((char*)"Models/Arbol.obj");
-    Model stopSign((char*)"Models/StopSign.obj");
-    Model hatsuneMiku((char*)"Models/HatsuneMiku.obj");
-    Model trashcan((char*)"Models/shareModel.obj");
+    Model redDog((char*)"Models/RedDog.obj");
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
     float vertices[] = {
@@ -179,7 +174,7 @@ int main()
 
     // Load textures
 
-    GLuint texture;
+   /* GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     int textureWidth, textureHeight, nrChannels;
@@ -203,7 +198,7 @@ int main()
     {
         std::cout << "Failed to load texture" << std::endl;
     }
-    stbi_image_free(image);
+    stbi_image_free(image);*/
 
 
     // Game loop
@@ -253,15 +248,15 @@ int main()
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.ambient"), 0.5f, 0.5f, 0.5f);
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0.7f, 0.2f, 0.4f);
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 0.6f, 0.6f, 0.6f);
-        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 0.6f);
+        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 32.0f);
 
 
 
 
         lightingShader.Use();
-        glActiveTexture(GL_TEXTURE0);
+       /* glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(glGetUniformLocation(lightingShader.Program, "texture_diffusse"), 0);
+        glUniform1i(glGetUniformLocation(lightingShader.Program, "texture_diffusse"), 0);*/
 
 
         // Draw the loaded model
@@ -269,7 +264,7 @@ int main()
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f)); // prueba sin ×3
+        model = glm::scale(model, glm::vec3(1.0f));
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
 
