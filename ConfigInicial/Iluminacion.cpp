@@ -58,8 +58,8 @@ glm::vec3 lightPos2(-1.0f, 1.0f, 2.0f);  // posición de la luz 2
 glm::vec3 moonCenter(0.0f, 0.0f, 0.0f);
 glm::vec3 moonPlaneOffset(0.0f, 0.0f, -2.0f);
 
-float sunRadius = 2.5f;  // radio de la órbita del Sol
-float moonRadius = 3.0f;  // radio de la órbita de la Luna
+float sunRadius = 4.5f;  // radio de la órbita del Sol
+float moonRadius = 5.0f;  // radio de la órbita de la Luna
 
 float sunAngle = 0.0f;   // ángulo actual (radianes)
 float moonAngle = 0.0f;
