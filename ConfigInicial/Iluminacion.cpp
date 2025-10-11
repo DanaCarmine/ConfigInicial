@@ -112,6 +112,12 @@ int main()
 
     // Load models
     Model redDog((char*)"Models/RedDog.obj");
+    Model car((char*)"Models/Transport6C.obj");
+    Model arbol((char*)"Models/Arbol.obj");
+    Model stopSign((char*)"Models/StopSign.obj");
+    Model hatsuneMiku((char*)"Models/HatsuneMiku.obj");
+    Model trashcan((char*)"Models/shareModel.obj");
+
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
     float vertices[] = {
@@ -135,7 +141,7 @@ int main()
         -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
         -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
         -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
+       
          0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
          0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
          0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
@@ -221,6 +227,7 @@ int main()
         lightingShader.Use();
         GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
         GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
+        GLint modelLoc = glGetUniformLocation(lightingShader.Program, "model");
         glUniform3f(lightPosLoc, lightPos.x + movelightPos, lightPos.y + movelightPos, lightPos.z + movelightPos);
         glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
@@ -252,25 +259,43 @@ int main()
 
 
 
-
-        lightingShader.Use();
+       lightingShader.Use();
+       
        /* glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glUniform1i(glGetUniformLocation(lightingShader.Program, "texture_diffusse"), 0);*/
 
 
         // Draw the loaded model
-
-
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.0f));
-        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-
-        // glBindVertexArray(VAO);
+        glm::mat4 model;
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         redDog.Draw(lightingShader);
-        //glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // Car
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        car.Draw(lightingShader);
+
+        // Árbol
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        arbol.Draw(lightingShader);
+
+        // Señal de alto
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        stopSign.Draw(lightingShader);
+
+        // Hatsune Miku
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        hatsuneMiku.Draw(lightingShader);
+
+        // Bote
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        trashcan.Draw(lightingShader);
 
 
         glBindVertexArray(0);
@@ -279,6 +304,8 @@ int main()
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+        // Lámpara 1
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos + movelightPos);
         model = glm::scale(model, glm::vec3(0.3f));
@@ -290,6 +317,7 @@ int main()
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
         model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos2 + movelightPos2);
         model = glm::scale(model, glm::vec3(0.3f));
