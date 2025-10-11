@@ -6,6 +6,8 @@ Fecha de entrega: 30 de Septiembre del 2025		     	      317345153
 */
 // Std. Includes
 #include <string>
+#include <cmath>
+
 
 // GLEW
 #include <GL/glew.h>
@@ -46,14 +48,26 @@ bool firstMouse = true;
 
 // Light attributes
 glm::vec3 lightPos(0.5f, 0.5f, 2.5f);
-float movelightPos = 0.0f;
+glm::vec3 sunCenter(0.0f, 0.0f, 0.0f);
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 float rot = 0.0f;
 bool activanim = false;
 
 glm::vec3 lightPos2(-1.0f, 1.0f, 2.0f);  // posición de la luz 2
-float movelightPos2 = 0.0f;
+glm::vec3 moonCenter(0.0f, 0.0f, 0.0f);
+glm::vec3 moonPlaneOffset(0.0f, 0.0f, -2.0f);
+
+float sunRadius = 2.5f;  // radio de la órbita del Sol
+float moonRadius = 3.0f;  // radio de la órbita de la Luna
+
+float sunAngle = 0.0f;   // ángulo actual (radianes)
+float moonAngle = 0.0f;
+
+float sunSpeed = 1.5f;   // rad/s cuando mantienes la tecla
+float moonSpeed = 1.2f;
+
+
 
 int main()
 {
@@ -177,36 +191,7 @@ int main()
     // normal attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    // Load textures
-
-   /* GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    int textureWidth, textureHeight, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
-    unsigned char* image;
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-    image = stbi_load("Models/Texture_albedo.jpg", &textureWidth, &textureHeight, &nrChannels, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    if (image)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    else
-    {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-    stbi_image_free(image);*/
-
-
+  
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -223,29 +208,39 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Órbita del Sol: plano YZ (X constante)
+        glm::vec3 sunPos = sunCenter + glm::vec3(
+            0.0f,
+            sunRadius * sin(sunAngle),  // norte-sur (Y)
+            sunRadius * cos(sunAngle)   // adelante-atrás (Z)
+        );
+
+        // Órbita de la Luna: plano XY (vertical), Z constante
+        glm::vec3 moonPos = moonCenter + moonPlaneOffset + glm::vec3(
+            moonRadius * cos(moonAngle), // X (este-oeste)
+            moonRadius * sin(moonAngle), // Y (arriba-abajo)
+            0.0f                         // Z fijo (no atraviesa el centro)
+        );
 
         lightingShader.Use();
-        GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
+       // GLint lightPosLoc = glGetUniformLocation(lightingShader.Program, "light.position");
         GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
         GLint modelLoc = glGetUniformLocation(lightingShader.Program, "model");
-        glUniform3f(lightPosLoc, lightPos.x + movelightPos, lightPos.y + movelightPos, lightPos.z + movelightPos);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.position"),sunPos.x, sunPos.y, sunPos.z);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.position"), moonPos.x, moonPos.y, moonPos.z);
         glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
-
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.position"), lightPos2.x + movelightPos2, lightPos2.y + movelightPos2, lightPos2.z + movelightPos2);
 
 
         // Set lights properties
-        //LUZ 1
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.3f, 0.3f, 0.3f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 0.2f, 0.7f, 0.8f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 0.3f, 0.6f, 0.4f);
+        // Luz del Sol (cálida)
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.ambient"), 0.08f, 0.06f, 0.02f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.diffuse"), 1.00f, 0.95f, 0.80f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 1.00f, 0.95f, 0.85f);
 
-        //LUZ 2
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 0.3f, 0.3f, 0.3f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.diffuse"), 0.2f, 0.7f, 0.8f);
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.specular"), 0.3f, 0.6f, 0.4f);
-
-
+        // Luz de la Luna (fría)
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 0.02f, 0.03f, 0.06f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.diffuse"), 0.60f, 0.70f, 1.00f);
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.specular"), 0.60f, 0.70f, 1.00f);
 
         glm::mat4 view = camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -257,14 +252,7 @@ int main()
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 0.6f, 0.6f, 0.6f);
         glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 32.0f);
 
-
-
        lightingShader.Use();
-       
-       /* glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(glGetUniformLocation(lightingShader.Program, "texture_diffusse"), 0);*/
-
 
         // Draw the loaded model
         glm::mat4 model;
@@ -301,25 +289,25 @@ int main()
         glBindVertexArray(0);
 
 
+        // Lámpara del Sol
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
-        // Lámpara 1
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos + movelightPos);
+        model = glm::translate(model, sunPos);
         model = glm::scale(model, glm::vec3(0.3f));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
+
+        // Lámpara de la Luna
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos2 + movelightPos2);
+        model = glm::translate(model, moonPos);
         model = glm::scale(model, glm::vec3(0.3f));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
@@ -368,52 +356,28 @@ void DoMovement()
             rot -= 0.1f;
     }
 
+    // Girar el Sol (YZ: norte-sur). O=horario, L=antihorario (ajusta a gusto)
+    if (keys[GLFW_KEY_O]) sunAngle += sunSpeed * deltaTime;
+    if (keys[GLFW_KEY_L]) sunAngle -= sunSpeed * deltaTime;
+
+    // Girar la Luna (XZ: este-oeste). I=horario, K=antihorario
+    if (keys[GLFW_KEY_I]) moonAngle += moonSpeed * deltaTime;
+    if (keys[GLFW_KEY_K]) moonAngle -= moonSpeed * deltaTime;
+
 }
 
 // Is called whenever a key is pressed/released via GLFW
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-    if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action)
-    {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+
+    if (key >= 0 && key < 1024) {
+        if (action == GLFW_PRESS)   keys[key] = true;
+        if (action == GLFW_RELEASE) keys[key] = false;
     }
-
-    if (key >= 0 && key < 1024)
-    {
-        if (action == GLFW_PRESS)
-        {
-            keys[key] = true;
-        }
-        else if (action == GLFW_RELEASE)
-        {
-            keys[key] = false;
-        }
-    }
-
-    if (keys[GLFW_KEY_O])
-    {
-
-        movelightPos += 0.1f;
-    }
-
-    if (keys[GLFW_KEY_L])
-    {
-
-        movelightPos -= 0.1f;
-    }
-    if (keys[GLFW_KEY_I])
-    {
-
-        movelightPos2 += 0.1f;
-    }
-
-    if (keys[GLFW_KEY_K])
-    {
-
-        movelightPos2 -= 0.1f;
-    }
-
 }
+
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
