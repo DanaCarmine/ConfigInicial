@@ -200,6 +200,7 @@ int main()
     Model stopSign((char*)"Models/StopSign.obj");
     Model hatsuneMiku((char*)"Models/HatsuneMiku.obj");
     Model trashcan((char*)"Models/shareModel.obj");
+    Model lamp((char*)"Models/street light1.obj");
 
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
     SphereMesh lampSphere = makeSphere(24, 36, 1.0f);
@@ -321,6 +322,12 @@ int main()
         model = glm::mat4(1.0f);
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         trashcan.Draw(lightingShader);
+
+        // Lampara de calle
+        model = glm::mat4(1.0f);
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        lamp.Draw(lightingShader);
+
 
 
         glBindVertexArray(0);
