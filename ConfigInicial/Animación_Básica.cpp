@@ -1,7 +1,7 @@
-/*
+﻿/*
 
-Previo 10     							   Hern�ndez Rubio Dana Valeria
-Fecha de entrega: 20 de octubre del 2025		     	      317345153
+Práctica 10     							   Hernández Rubio Dana Valeria
+Fecha de entrega: 27 de octubre del 2025		     	      317345153
 
 */
 #include <iostream>
@@ -109,14 +109,32 @@ glm::vec3 Light1 = glm::vec3(0);
 float rotBall = 0;
 bool AnimBall = false;
 
-// Variables para la animaci�n de la pelota
-glm::vec3 ballAnchorXZ = glm::vec3(0.0f, 0.0f, 0.0f); // XZ de la nariz del perro 
-float yNose = 0.0f;           // Altura de la nariz del perro 
-float ballSpeed = 0.7f;       // Velocidad de ida y vuelta 
-float ballTime = 0.0f;        // Tiempo acumulado para la oscilaci�n
-float ballY = 0.0f;           // Altura actual de la pelota 
+//Animación de perro y pelota
+const float PI = 3.1415926535f;
 
-bool AnimUpDown = false;  
+glm::vec3 circleCenter = glm::vec3(0.0f, 0.0f, 0.0f); // centro del circuito
+float circleRadius = 2.0f;                             // radio de la circunferencia
+float baseDogY = 0.0f;                                 // altura base del perro
+float baseBallY = 0.3f;                                // altura base de la pelota
+
+float angleTheta = 0.0f;       // ángulo de la pelota (el perro será -angleTheta)
+float angularSpeed = 1.2f;     // rad/s
+
+bool animRunning = false;      // se activa con la tecla C
+
+// Cruce -> perro salta y pelota baja
+bool eventActive = false;
+float eventTimer = 0.0f;
+const float eventDuration = 0.45f; // seg del salto/caída
+const float jumpHeight = 0.6f;     // altura del brinco del perro
+const float dropDepth = 0.4f;     // cuánto baja la pelota
+
+int prevSinSign = 0;               // para detectar cruce
+
+// rotación (rodado) de pelota
+float spinSpeed = 180.0f; // grados/seg
+
+float dogAdvanceTime = 0.12f;  // en segundos 
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -195,8 +213,8 @@ int main()
 
 	// Set texture units
 	lightingShader.Use();
-	glUniform1i(glGetUniformLocation(lightingShader.Program, "Material.difuse"), 0);
-	glUniform1i(glGetUniformLocation(lightingShader.Program, "Material.specular"), 1);
+	glUniform1i(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0);
+	glUniform1i(glGetUniformLocation(lightingShader.Program, "material.specular"), 1);
 
 	glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
 
@@ -225,7 +243,6 @@ int main()
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
 
-        glUniform1i(glGetUniformLocation(lightingShader.Program, "diffuse"), 0);
 		//glUniform1i(glGetUniformLocation(lightingShader.Program, "specular"),1);
 
 		GLint viewPosLoc = glGetUniformLocation(lightingShader.Program, "viewPos");
@@ -285,61 +302,75 @@ int main()
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 
+		// PISO 
 		glm::mat4 model(1);
-
-	
-		
-		//Carga de modelo 
-        view = camera.GetViewMatrix();	
 		model = glm::mat4(1);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Piso.Draw(lightingShader);
 
+		// POSICIONES EN CIRCULO 
+		// ángulo de la pelota (θ) y del perro (-θ) para sentidos contrarios
+		float thetaBall = angleTheta;
+		float thetaDog = -angleTheta;
+
+		// alturas con evento (salto/caída)
+		float dogYOffset = 0.0f;
+		float ballYOffset = 0.0f;
+
+		if (eventActive) {
+			// t: fase base 0..1 del evento
+			float t = eventTimer / eventDuration;
+
+			// el perro va “adelantado” dogAdvanceTime segundos
+			float dogT = (eventTimer + dogAdvanceTime) / eventDuration;
+			if (dogT < 0.0f) dogT = 0.0f;
+			if (dogT > 1.0f) dogT = 1.0f;
+
+			// ease-in/out suave con seno (0..1..0)
+			float dogWave = sinf(dogT * PI);
+			float ballWave = sinf(t * PI);
+
+			dogYOffset = jumpHeight * dogWave;    // perro sube antes
+			ballYOffset = -dropDepth * ballWave;   // pelota baja en el cruce normal
+		}
+
+		// posiciones XZ en la circunferencia
+		glm::vec3 dogPos = circleCenter + glm::vec3(
+			circleRadius * cosf(thetaDog),
+			baseDogY + dogYOffset,
+			circleRadius * sinf(thetaDog)
+		);
+		glm::vec3 ballPos = circleCenter + glm::vec3(
+			circleRadius * cosf(thetaBall),
+			baseBallY + ballYOffset,
+			circleRadius * sinf(thetaBall)
+		);
+
+		// orientaciones (tangente a la trayectoria)
+		// tangente = (-sin θ, +cos θ) en XZ -> yaw = atan2(tanX, tanZ) = atan2(-sinθ, cosθ)
+		float dogYaw = atan2f(-sinf(thetaDog), cosf(thetaDog));
+		dogYaw += PI;
+		float ballYaw = atan2f(-sinf(thetaBall), cosf(thetaBall));
+
+		// DOG 
 		model = glm::mat4(1);
+		model = glm::translate(model, dogPos);
+		model = glm::rotate(model, dogYaw, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
 		Dog.Draw(lightingShader);
 
+		// BALL 
 		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
+		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = glm::translate(model, ballPos);
+		model = glm::rotate(model, ballYaw, glm::vec3(0.0f, 1.0f, 0.0f));               // orientación tangente
+		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f)); // rodado
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
-		// posiciona por X/Z de la nariz y Y animada 
-		model = glm::translate(model, glm::vec3(ballAnchorXZ.x, ballY, ballAnchorXZ.z));
-		
-		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
-		glBindVertexArray(0);
-	
-
-		// Also draw the lamp object, again binding the appropriate shader
-		lampShader.Use();
-		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
-		modelLoc = glGetUniformLocation(lampShader.Program, "model");
-		viewLoc = glGetUniformLocation(lampShader.Program, "view");
-		projLoc = glGetUniformLocation(lampShader.Program, "projection");
-
-		// Set matrices
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
-		model = glm::mat4(1);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		// Draw the light object (using light's vertex attributes)
-		
-			model = glm::mat4(1);
-			model = glm::translate(model, pointLightPositions[0]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-			glBindVertexArray(VAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		glBindVertexArray(0);
-
+		Ball.Draw(lightingShader);
+		glDisable(GL_BLEND);
 
 
 		// Swap the screen buffers
@@ -413,21 +444,18 @@ void DoMovement()
 	{
 		pointLightPositions[0].z += 0.01f;
 	}
-	if (keys[GLFW_KEY_O]) yNose += 0.01f;
-	if (keys[GLFW_KEY_K]) yNose -= 0.01f;
 
-	if(keys[GLFW_KEY_L]) ballAnchorXZ.x += 0.01f;
-	if (keys[GLFW_KEY_J]) ballAnchorXZ.x -= 0.01f;
-	if (keys[GLFW_KEY_I]) ballAnchorXZ.z -= 0.01f;
 }
 
 // Is called whenever a key is pressed/released via GLFW
 void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-	if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action)
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
 	{
-		glfwSetWindowShouldClose(window, GL_TRUE);
+		active = !active;
+		Light1 = active ? glm::vec3(1.0f, 1.0f, 0.0f) : glm::vec3(0.0f);
 	}
+
 
 	if (key >= 0 && key < 1024)
 	{
@@ -441,29 +469,15 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 		}
 	}
 
-	if (keys[GLFW_KEY_SPACE])
-	{
-		active = !active;
-		if (active)
-		{
-			Light1 = glm::vec3(1.0f, 1.0f, 0.0f);
-			
+	if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+		animRunning = !animRunning;
+		prevSinSign = 0;                // reinicia detector de cruce
+		if (!animRunning) {             
+			eventActive = false;
+			eventTimer = 0.0f;
 		}
-		else
-		{
-			Light1 = glm::vec3(0);//Cuado es solo un valor en los 3 vectores pueden dejar solo una componente
-		}
-	}
-	if (keys[GLFW_KEY_N])
-	{
-		AnimUpDown = !AnimUpDown;
-		
 	}
 
-	if (keys[GLFW_KEY_M])
-	{
-		AnimUpDown = !AnimUpDown;
-	}
 
 }
 void Animation() {
@@ -477,23 +491,40 @@ void Animation() {
 		//rotBall = 0.0f;
 	}
 
-	if (AnimUpDown) {
-		float yMin = yNose;
-		float yMax = pointLightPositions[0].y; // altura de la luz
+	// rodado de la pelota cuando corre la animación
+	if (animRunning) {
+		rotBall += spinSpeed * deltaTime;      // grados/seg * s
+	}
 
-		if (fabs(yMax - yMin) < 1e-6f) {
-			ballY = yMin; 
+	// avanza ángulo si está corriendo
+	if (animRunning) {
+		angleTheta += angularSpeed * deltaTime; // rad/seg * s
+		// normaliza a [0, 2π) para evitar overflow
+		angleTheta = fmodf(angleTheta, 2.0f * PI);
+		if (angleTheta < 0.0f) angleTheta += 2.0f * PI;
+	}
+
+	// detectar cruce: cuando sin(theta) cruza por 0 (0, π, 2π, ...)
+	if (animRunning) {
+		float s = sinf(angleTheta);
+		int sgn = (s >= 0.0f) ? 1 : -1;
+		if (prevSinSign != 0 && sgn != prevSinSign && fabsf(s) < 0.05f) {
+			eventActive = true;
+			eventTimer = 0.0f;
 		}
-		else {
-			ballTime += deltaTime;
-			// s oscila entre 0..1..0 con sin()
-			float s = 0.5f * (sinf(2.0f * 3.14159265f * ballSpeed * ballTime) + 1.0f);
-			ballY = yMin + (yMax - yMin) * s;
+		prevSinSign = sgn;
+	}
+
+	// actualizar evento de salto/caída con easing seno
+	if (eventActive) {
+		eventTimer += deltaTime;
+		if (eventTimer >= eventDuration) {
+			eventActive = false;
+			eventTimer = 0.0f;
 		}
 	}
-	// si AnimUpDown es false, ballY conserva su �ltimo valor
-
 }
+
 
 void MouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
@@ -507,7 +538,7 @@ void MouseCallback(GLFWwindow *window, double xPos, double yPos)
 	GLfloat xOffset = xPos - lastX;
 	GLfloat yOffset = lastY - yPos;  // Reversed since y-coordinates go from bottom to left
 
-	lastX = xPos;
+	lastX = xPos;           
 	lastY = yPos;
 
 	camera.ProcessMouseMovement(xOffset, yOffset);
