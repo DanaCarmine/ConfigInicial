@@ -1,11 +1,15 @@
-/*
+Ôªø/*
 
-Previo 12         							   Hern·ndez Rubio Dana Valeria
-Fecha de entrega: 4 de noviembre del 2025		     	          317345153
+Pr√°ctica 12         							   Hern√°ndez Rubio Dana Valeria
+Fecha de entrega: 8 de noviembre del 2025		     	          317345153
 
 */
 #include <iostream>
 #include <cmath>
+// Nuevas librerias 
+#include <fstream>
+#include <string>
+
 
 // GLEW
 #include <GL/glew.h>
@@ -114,8 +118,6 @@ float frontRightLeg = 0.0f;
 float RLegs = 0.0f;
 float head = 0.0f;
 float tail = 0.0f;
-float sit = 0.0f;
-
 
 //KeyFrames
 float dogPosX , dogPosY , dogPosZ  ;
@@ -136,20 +138,18 @@ typedef struct _frame {
 	float head;
 	float headInc;
 
-	float tail;           // RotaciÛn de la cola
-	float tailInc;        // Incremento de rotaciÛn de la cola
+	float tail;           // Rotaci√≥n de la cola
+	float tailInc;        // Incremento de rotaci√≥n de la cola
 
-	float frontLeftLeg;   // RotaciÛn de la pata izquierda
-	float frontLeftLegInc; // Incremento de rotaciÛn de la pata izquierda
+	float frontLeftLeg;   // Rotaci√≥n de la pata izquierda
+	float frontLeftLegInc; // Incremento de rotaci√≥n de la pata izquierda
 
-	float frontRightLeg;  // RotaciÛn de la pata derecha
-	float frontRightLegInc; // Incremento de rotaciÛn de la pata derecha
+	float frontRightLeg;  // Rotaci√≥n de la pata derecha
+	float frontRightLegInc; // Incremento de rotaci√≥n de la pata derecha
 
-	float RLegs;    // RotaciÛn de la patas traseras 
-	float RLegsInc; // Incremento de rotaciÛn de las patas traseras 
-
-	float sit;    
-	float sitInc; 
+	float RLegs;    // Rotaci√≥n de la patas traseras 
+	float RLegsInc; // Incremento de rotaci√≥n de las patas traseras 
+ 
 
 
 }FRAME;
@@ -175,11 +175,79 @@ void saveFrame(void)
 	KeyFrame[FrameIndex].frontLeftLeg = frontLeftLeg;
 	KeyFrame[FrameIndex].frontRightLeg = frontRightLeg;
 	KeyFrame[FrameIndex].RLegs = RLegs;
-	KeyFrame[FrameIndex].sit = sit;
+
 
 
 	FrameIndex++;
 }
+
+//Agregamos las funciones para guardar y reproducir la animacion
+void saveAnimationToFile(const std::string& filename) {
+	std::ofstream file(filename);
+	if (!file.is_open()) {
+		std::cerr << "Error al guardar animaci√≥n." << std::endl;
+		return;
+	}
+
+	file << FrameIndex << std::endl;
+	for (int i = 0; i < FrameIndex; i++) {
+		file << KeyFrame[i].dogPosX << " "
+			<< KeyFrame[i].dogPosY << " "
+			<< KeyFrame[i].dogPosZ << " "
+			<< KeyFrame[i].rotDog << " "
+			<< KeyFrame[i].head << " "
+			<< KeyFrame[i].tail << " "
+			<< KeyFrame[i].frontLeftLeg << " "
+			<< KeyFrame[i].frontRightLeg << " "
+			<< KeyFrame[i].RLegs << std::endl;
+	}
+
+	file.close();
+	std::cout << "Animaci√≥n guardada correctamente en " << filename << std::endl;
+}
+
+
+void loadAnimationFromFile(const std::string& filename) {
+	std::ifstream file(filename);
+	if (!file.is_open()) {
+		std::cerr << "No se encontr√≥ el archivo de animaci√≥n." << std::endl;
+		return;
+	}
+
+	file >> FrameIndex;
+	for (int i = 0; i < FrameIndex; i++) {
+		file >> KeyFrame[i].dogPosX
+			>> KeyFrame[i].dogPosY
+			>> KeyFrame[i].dogPosZ
+			>> KeyFrame[i].rotDog
+			>> KeyFrame[i].head
+			>> KeyFrame[i].tail
+			>> KeyFrame[i].frontLeftLeg
+			>> KeyFrame[i].frontRightLeg
+			>> KeyFrame[i].RLegs; // debe coincidir
+	}
+
+	file.close();
+	std::cout << "Animaci√≥n cargada correctamente desde " << filename << std::endl;
+
+	for (int i = 0; i < FrameIndex; i++) {
+		KeyFrame[i].incX = 0;
+		KeyFrame[i].incY = 0;
+		KeyFrame[i].incZ = 0;
+		KeyFrame[i].headInc = 0;
+		KeyFrame[i].tailInc = 0;
+		KeyFrame[i].frontLeftLegInc = 0;
+		KeyFrame[i].frontRightLegInc = 0;
+		KeyFrame[i].RLegsInc = 0;
+		KeyFrame[i].rotDogInc = 0;
+	}
+
+	std::cout << "Incrementos reiniciados tras cargar animaci√≥n." << std::endl;
+
+}
+
+
+
 
 void resetElements(void)
 {
@@ -191,7 +259,7 @@ void resetElements(void)
 	frontLeftLeg = KeyFrame[0].frontLeftLeg;
 	frontRightLeg = KeyFrame[0].frontRightLeg;
 	RLegs = KeyFrame[0].RLegs;
-	sit = KeyFrame[0].sit;
+
 	rotDog = KeyFrame[0].rotDog;
 
 }
@@ -202,7 +270,7 @@ void interpolation(void)
 	KeyFrame[playIndex].incY = (KeyFrame[playIndex + 1].dogPosY - KeyFrame[playIndex].dogPosY) / i_max_steps;
 	KeyFrame[playIndex].incZ = (KeyFrame[playIndex + 1].dogPosZ - KeyFrame[playIndex].dogPosZ) / i_max_steps;
 	KeyFrame[playIndex].headInc = (KeyFrame[playIndex + 1].head - KeyFrame[playIndex].head) / i_max_steps;
-	KeyFrame[playIndex].sitInc = (KeyFrame[playIndex + 1].sit - KeyFrame[playIndex].sit) / i_max_steps;
+
 	KeyFrame[playIndex].tailInc = (KeyFrame[playIndex + 1].tail - KeyFrame[playIndex].tail) / i_max_steps;
 	KeyFrame[playIndex].frontLeftLegInc = (KeyFrame[playIndex + 1].frontLeftLeg - KeyFrame[playIndex].frontLeftLeg) / i_max_steps;
 	KeyFrame[playIndex].frontRightLegInc = (KeyFrame[playIndex + 1].frontRightLeg - KeyFrame[playIndex].frontRightLeg) / i_max_steps;
@@ -307,9 +375,6 @@ int main()
 
 		KeyFrame[i].RLegs = 0;
 		KeyFrame[i].RLegsInc = 0;
-
-		KeyFrame[i].sit = 0;
-		KeyFrame[i].sitInc = 0;
 
 
 	}
@@ -449,11 +514,6 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		DogBody.Draw(lightingShader);
 
-		modelTemp = model = glm::translate(model, glm::vec3(dogPosX, dogPosY, dogPosZ));
-		modelTemp = model = glm::rotate(model, glm::radians(sit), glm::vec3(1.0f, 0.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		DogBody.Draw(lightingShader);
-
 		//Head
 		model = modelTemp;
 		model = glm::translate(model, glm::vec3(0.0f, 0.093f, 0.208f));
@@ -536,6 +596,10 @@ int main()
 
 	
 	
+	if (FrameIndex > 1) {
+		saveAnimationToFile("autoSave.txt");
+		std::cout << "Animaci√≥n guardada autom√°ticamente al salir." << std::endl;
+	}
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 	glfwTerminate();
@@ -552,41 +616,34 @@ void DoMovement()
 
 	// Control de la cola
 
-	if (keys[GLFW_KEY_8]) {
-		sit += 0.5f;  // Incrementar rotaciÛn de la cola
-	}
-	if (keys[GLFW_KEY_7]) {
-		sit -= 0.5f;  // Decrementar rotaciÛn de la cola
-	}
-
 	if (keys[GLFW_KEY_T]) {
-		tail += 0.5f;  // Incrementar rotaciÛn de la cola
+		tail += 0.5f;  // Incrementar rotaci√≥n de la cola
 	}
 	if (keys[GLFW_KEY_0]) {
-		tail -= 0.5f;  // Decrementar rotaciÛn de la cola
+		tail -= 0.5f;  // Decrementar rotaci√≥n de la cola
 	}
 
 	// Control de las patas delanteras
 	if (keys[GLFW_KEY_F]) {
-		frontLeftLeg += 0.05f;  // Incrementar rotaciÛn de la pata izquierda
+		frontLeftLeg += 0.05f;  // Incrementar rotaci√≥n de la pata izquierda
 	}
 	if (keys[GLFW_KEY_N]) {
-		frontLeftLeg -= 0.05f;  // Incrementar rotaciÛn de la pata izquierda
+		frontLeftLeg -= 0.05f;  // Incrementar rotaci√≥n de la pata izquierda
 	}
 
 	if (keys[GLFW_KEY_V]) {
-		frontRightLeg += 0.05f;  // Incrementar rotaciÛn de la pata derecha
+		frontRightLeg += 0.05f;  // Incrementar rotaci√≥n de la pata derecha
 	}
 	if (keys[GLFW_KEY_M]) {
-		frontRightLeg -= 0.05f;  // Incrementar rotaciÛn de la pata derecha
+		frontRightLeg -= 0.05f;  // Incrementar rotaci√≥n de la pata derecha
 	}
 
 	// Control de las patas traseras
 	if (keys[GLFW_KEY_B]) {
-		RLegs += 0.05f;  // Incrementar rotaciÛn de la pata izquierda trasera
+		RLegs += 0.05f;  // Incrementar rotaci√≥n de la pata izquierda trasera
 	}
 	if (keys[GLFW_KEY_C]) {
-		RLegs -= 0.05f;  // Incrementar rotaciÛn de la pata derecha trasera
+		RLegs -= 0.05f;  // Incrementar rotaci√≥n de la pata derecha trasera
 	}
 
 	if (keys[GLFW_KEY_4])
@@ -734,6 +791,15 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 		}
 
 	}
+	// Guardar animaci√≥n con tecla P
+	if (keys[GLFW_KEY_P]) {
+		saveAnimationToFile("animacion.txt");
+	}
+
+	// Cargar animaci√≥n con tecla O
+	if (keys[GLFW_KEY_O]) {
+		loadAnimationFromFile("animacion.txt");
+	}
 
 
 
@@ -802,7 +868,7 @@ void Animation() {
 			frontRightLeg += KeyFrame[playIndex].frontRightLegInc;
 			frontLeftLeg += KeyFrame[playIndex].frontLeftLegInc;
 			RLegs += KeyFrame[playIndex].RLegsInc;
-			sit += KeyFrame[playIndex].sitInc;
+			
 			rotDog += KeyFrame[playIndex].rotDogInc;
 
 			i_curr_steps++;
